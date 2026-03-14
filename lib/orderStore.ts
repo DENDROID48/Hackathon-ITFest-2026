@@ -32,7 +32,7 @@ type DbOrder = {
   payment_method: "IN_APP" | "AT_STORE";
   note: string | null;
   items: OrderItem[]; // Supabase returnează JSON-ul mapat automat
-  total: number;
+  total_amount: number;
 };
 
 // --- 3. Inițializăm Supabase ---
@@ -56,8 +56,8 @@ function mapDbOrderToAppOrder(dbOrder: DbOrder): Order {
     storeId: dbOrder.store_id,
     paymentMethod: dbOrder.payment_method,
     note: dbOrder.note || "",
-    items: dbOrder.items,
-    total: Number(dbOrder.total),
+    items: dbOrder.items || [],
+    total: Number(dbOrder.total_amount),
   };
 }
 
@@ -117,6 +117,21 @@ export async function getOrderFromDb(orderId: string): Promise<Order | null> {
   
   // Cast explicit
   return mapDbOrderToAppOrder(data as unknown as DbOrder);
+}
+
+export async function getUserOrders(userId: string): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    console.error("Eroare la preluarea comenzilor:", error);
+    return [];
+  }
+
+  return (data as unknown as DbOrder[]).map(mapDbOrderToAppOrder);
 }
 
 export async function updateOrderStatus(orderId: string, status: string): Promise<boolean> {

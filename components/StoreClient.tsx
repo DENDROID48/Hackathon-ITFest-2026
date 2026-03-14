@@ -71,9 +71,19 @@ export default function StoreClient({ store }: { store: StoreData }) {
   const handleReserve = async (offer: StoreOffer) => {
     setIsProcessing(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        alert("Trebuie să fii autentificat pentru a rezerva un pachet!");
+        router.push("/login");
+        return;
+      }
+
       const { data: orderDataArray, error: orderError } = await supabase
         .from("orders")
         .insert({
+          user_id: userId,
           store_id: store.id,
           total_amount: offer.price,
           status: "RESERVED",
