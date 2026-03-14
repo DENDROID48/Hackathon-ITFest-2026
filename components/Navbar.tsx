@@ -161,7 +161,10 @@ export default function Navbar() {
             {/* USER ACTIONS */}
             <div className="hidden md:flex items-center gap-5">
               {user ? (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Link href="/merchant" className="hidden lg:flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-full text-xs hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors">
+                    🏪 Mod Comerciant
+                  </Link>
                   <Link href="/settings" className="flex items-center gap-3 pl-1 pr-4 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all border border-transparent hover:border-gray-200 dark:hover:border-neutral-700 group">
                     <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-emerald-200 transition-all">
                       {getInitials()}
@@ -217,6 +220,9 @@ export default function Navbar() {
                       <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                     </div>
                   </div>
+                  <Link href="/merchant" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 py-3 rounded-xl font-bold mb-3">
+                    🏪 Panou Comerciant
+                  </Link>
                   <Link href="/settings" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-black dark:bg-white text-white dark:text-black py-3 rounded-xl font-bold mb-3">
                     Setări Profil
                   </Link>
