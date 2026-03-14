@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers"; 
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,10 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-neutral-900 text-gray-900 dark:text-white transition-colors duration-300`}>
         <Providers>
-          {children}
+          <Navbar />
+          <div className="pt-14"> {/* Added padding to offset fixed navbar */}
+            {children}
+          </div>
         </Providers>
       </body>
     </html>
