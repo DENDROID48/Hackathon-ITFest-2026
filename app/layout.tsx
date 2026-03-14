@@ -35,7 +35,7 @@ export default function RootLayout({
           crossOrigin="" 
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-neutral-900 text-gray-900 dark:text-white transition-colors duration-300`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-neutral-900 text-gray-900 dark:text-white`}>
         <Providers>
           <Navbar />
           <div className="pt-14"> {/* Added padding to offset fixed navbar */}

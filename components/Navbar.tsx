@@ -120,33 +120,36 @@ export default function Navbar() {
 
   const isActive = (path: string) => 
     pathname === path 
-      ? "text-black font-bold bg-gray-100/50" 
-      : "text-gray-500 font-medium hover:text-black hover:bg-gray-50";
+      ? "text-black dark:text-white font-bold bg-gray-100/50 dark:bg-neutral-800/50" 
+      : "text-gray-500 dark:text-gray-400 font-medium hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-neutral-800";
 
   return (
     <>
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
           scrolled 
-            ? "bg-white/80 backdrop-blur-xl border-gray-200 shadow-sm py-2" 
-            : "bg-white/60 backdrop-blur-md border-transparent py-4"
+            ? "bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-gray-200 dark:border-neutral-800 shadow-sm py-2" 
+            : "bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md border-transparent py-4"
         }`}
+        style={{
+          WebkitBackdropFilter: scrolled ? "blur(24px)" : "blur(12px)",
+        }}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex justify-between items-center h-14">
             
             {/* LOGO */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <div className="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
                 ⚡
               </div>
-              <span className="font-black text-2xl tracking-tighter text-gray-900">
-                Quick<span className="text-emerald-600">Eets</span>.
+              <span className="font-black text-2xl tracking-tighter text-gray-900 dark:text-white">
+                Quick<span className="text-emerald-600 dark:text-emerald-500">Eets</span>.
               </span>
             </Link>
 
             {/* DESKTOP MENU */}
-            <div className="hidden md:flex items-center gap-2 bg-gray-100/50 p-1.5 rounded-full border border-gray-200/50 backdrop-blur-sm">
+            <div className="hidden md:flex items-center gap-2 bg-gray-100/50 dark:bg-neutral-800/50 p-1.5 rounded-full border border-gray-200/50 dark:border-neutral-700/50 backdrop-blur-sm">
               <Link href="/" className={`px-5 py-2 rounded-full text-sm transition-all duration-200 ${isActive('/')}`}>
                 Hartă 🗺️
               </Link>
@@ -159,12 +162,12 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-5">
               {user ? (
                 <div className="flex items-center gap-4">
-                  <Link href="/settings" className="flex items-center gap-3 pl-1 pr-4 py-1 rounded-full hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200 group">
+                  <Link href="/settings" className="flex items-center gap-3 pl-1 pr-4 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all border border-transparent hover:border-gray-200 dark:hover:border-neutral-700 group">
                     <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-emerald-200 transition-all">
                       {getInitials()}
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-xs font-bold text-gray-900 leading-none mb-0.5">
+                      <span className="text-xs font-bold text-gray-900 dark:text-white leading-none mb-0.5">
                         {profile?.full_name?.split(" ")[0] || "Salut!"}
                       </span>
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
@@ -174,7 +177,7 @@ export default function Navbar() {
                   </Link>
                 </div>
               ) : (
-                <Link href="/login" className="bg-black text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 hover:scale-105 transition-all shadow-lg shadow-gray-200">
+                <Link href="/login" className="bg-black dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-200 hover:scale-105 transition-all shadow-lg shadow-gray-200 dark:shadow-none">
                   Intră în Cont
                 </Link>
               )}
@@ -183,7 +186,7 @@ export default function Navbar() {
             {/* MOBILE BUTTON */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 text-black transition"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 text-black dark:text-white transition"
             >
               <span className="text-2xl">{isMenuOpen ? "✕" : "☰"}</span>
             </button>
@@ -193,36 +196,36 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white/95 backdrop-blur-xl pt-24 px-6 md:hidden animate-in fade-in slide-in-from-bottom-10 duration-200">
+        <div className="fixed inset-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl pt-24 px-6 md:hidden animate-in fade-in slide-in-from-bottom-10 duration-200">
           <div className="flex flex-col gap-4">
-            <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-2xl font-black text-gray-900 py-4 border-b border-gray-100">
+            <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-2xl font-black text-gray-900 dark:text-white py-4 border-b border-gray-100 dark:border-neutral-800">
               🗺️ Harta Interactivă
             </Link>
-            <Link href="/orders" onClick={() => setIsMenuOpen(false)} className="text-2xl font-black text-gray-900 py-4 border-b border-gray-100">
+            <Link href="/orders" onClick={() => setIsMenuOpen(false)} className="text-2xl font-black text-gray-900 dark:text-white py-4 border-b border-gray-100 dark:border-neutral-800">
               📦 Istoric Comenzi
             </Link>
             
             <div className="mt-8">
               {user ? (
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                <div className="bg-gray-50 dark:bg-neutral-800 p-6 rounded-3xl border border-gray-100 dark:border-neutral-700">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
                       {getInitials()}
                     </div>
                     <div>
-                      <div className="font-bold text-lg">{profile?.full_name || "Utilizator"}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="font-bold text-lg dark:text-white">{profile?.full_name || "Utilizator"}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                     </div>
                   </div>
-                  <Link href="/settings" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-black text-white py-3 rounded-xl font-bold mb-3">
+                  <Link href="/settings" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-black dark:bg-white text-white dark:text-black py-3 rounded-xl font-bold mb-3">
                     Setări Profil
                   </Link>
-                  <button onClick={handleLogout} className="block w-full text-center text-red-500 font-bold py-3 hover:bg-red-50 rounded-xl">
+                  <button onClick={handleLogout} className="block w-full text-center text-red-500 dark:text-red-400 font-bold py-3 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl">
                     Deconectare
                   </button>
                 </div>
               ) : (
-                <Link href="/login" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-200">
+                <Link href="/login" onClick={() => setIsMenuOpen(false)} className="block w-full text-center bg-emerald-600 dark:bg-emerald-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-200 dark:shadow-none">
                   Autentificare
                 </Link>
               )}
