@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase, getUserOrders, type Order } from "@/lib/orderStore";
+import { supabase, getUserOrders, updateOrderStatus, type Order } from "@/lib/orderStore";
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for Customer Swipe Double Check
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     async function loadOrders() {
@@ -31,6 +35,37 @@ export default function OrderList() {
 
     loadOrders();
   }, []);
+
+  const handleConfirmPickup = async (e: React.MouseEvent, orderId: string) => {
+    e.preventDefault(); // Prevent navigating to the Link href
+    
+    if (confirmingId === orderId) {
+      // Second click: Execute the update
+      setIsUpdating(true);
+      
+      // Optimistic update
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'COMPLETED' } : o));
+      
+      const success = await updateOrderStatus(orderId, 'COMPLETED');
+      
+      if (!success) {
+        alert("Eroare la confirmare. Încearcă din nou.");
+        // Revert
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'RESERVED' } : o));
+      }
+      
+      setIsUpdating(false);
+      setConfirmingId(null);
+    } else {
+      // First click: Request confirmation
+      setConfirmingId(orderId);
+      
+      // Auto-cancel confirmation after 5 seconds
+      setTimeout(() => {
+        setConfirmingId((current) => current === orderId ? null : current);
+      }, 5000);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,6 +131,8 @@ export default function OrderList() {
           statusLabel = "Anulată";
         }
 
+        const isConfirming = confirmingId === order.id;
+
         return (
           <Link
             href={`/orders/${order.id}`}
@@ -118,6 +155,12 @@ export default function OrderList() {
                   <h4 className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     Spre Detalii Comandă ➔
                   </h4>
+                  {order.pickup_time && order.pickup_time !== "Nespecificat" && (
+                     <p className="text-sm font-bold text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1.5">
+                       <span>⏱️</span>
+                       Ridicare: {order.pickup_time}
+                     </p>
+                  )}
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider font-semibold">
                     ID: {order.id.split('-')[0]}***
                   </p>
@@ -132,6 +175,37 @@ export default function OrderList() {
                 </div>
 
               </div>
+
+              {/* ACTION: Confirm Pickup (Only for RESERVED) */}
+              {order.status === "RESERVED" && (
+                <div 
+                  className="mt-5 pt-5 border-t border-gray-100 dark:border-neutral-800/50"
+                  onClick={(e) => e.preventDefault()} // Extra protection against Link click
+                >
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-orange-50 dark:bg-orange-900/10 p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30">
+                    <div className="text-sm">
+                      <p className="font-bold text-gray-900 dark:text-white mb-0.5">Te afli la locație?</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">Arată acest ecran casierului și apasă butonul după ce ai primit comanda.</p>
+                    </div>
+                    
+                    <button
+                      disabled={isUpdating}
+                      onClick={(e) => handleConfirmPickup(e, order.id)}
+                      className={`
+                        w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300
+                        ${isConfirming 
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-neutral-900' 
+                          : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-emerald-900/60'
+                        }
+                        ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                    >
+                      {isUpdating ? 'Se procesează...' : (isConfirming ? 'Sigur? Apasă din nou!' : '👆 Confirmă Ridicarea')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </Link>
         );

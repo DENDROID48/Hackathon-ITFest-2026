@@ -20,6 +20,7 @@ export type Order = {
   note?: string;
   items: OrderItem[];
   total: number;
+  pickup_time?: string;
 };
 
 // --- 2. Tipul Bazei de Date (Backend/Supabase) ---
@@ -33,6 +34,7 @@ type DbOrder = {
   note: string | null;
   items: OrderItem[]; // Supabase returnează JSON-ul mapat automat
   total_amount: number;
+  pickup_time?: string;
 };
 
 // --- 3. Inițializăm Supabase ---
@@ -58,6 +60,7 @@ function mapDbOrderToAppOrder(dbOrder: DbOrder): Order {
     note: dbOrder.note || "",
     items: dbOrder.items || [],
     total: Number(dbOrder.total_amount),
+    pickup_time: dbOrder.pickup_time,
   };
 }
 

@@ -10,6 +10,7 @@ type StoreOffer = {
   price: number;
   originalPrice: number;
   quantityAvailable: number;
+  pickupTime?: string;
 };
 
 type StoreData = {
@@ -87,7 +88,8 @@ export default function StoreClient({ store }: { store: StoreData }) {
           store_id: store.id,
           total_amount: offer.price,
           status: "RESERVED",
-          payment_method: "AT_STORE"
+          payment_method: "AT_STORE",
+          pickup_time: offer.pickupTime,
         })
         .select();
 
@@ -240,6 +242,14 @@ export default function StoreClient({ store }: { store: StoreData }) {
                             <span className="font-medium text-gray-500 dark:text-gray-400">Preț inițial în magazin:</span>
                             <span className="font-bold text-gray-400 line-through dark:text-gray-500">{offer.originalPrice} RON</span>
                           </div>
+                          
+                          {offer.pickupTime && (
+                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex justify-between items-center bg-orange-50/50 dark:bg-orange-900/10 p-2 rounded-lg border border-orange-100 dark:border-orange-900/20">
+                              <span className="font-medium flex items-center gap-1.5"><span className="text-orange-500">⏱️</span> Ora Ridicare:</span>
+                              <span className="font-bold text-orange-700 dark:text-orange-400">{offer.pickupTime}</span>
+                            </div>
+                          )}
+                
                           <div className="mt-2 flex justify-between items-center text-sm">
                             <span className="font-medium text-gray-500 dark:text-gray-400">Prețul tău salvat:</span>
                             <span className="font-bold text-gray-900 dark:text-white">{offer.price} RON</span>

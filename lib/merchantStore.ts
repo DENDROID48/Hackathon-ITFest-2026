@@ -6,6 +6,7 @@ export type StoreOffer = {
   price: number;
   originalPrice: number;
   quantityAvailable: number;
+  pickupTime?: string;
 };
 
 export type StoreData = {
@@ -38,14 +39,21 @@ export async function getStoreByOwner(userId: string): Promise<StoreData | null>
 }
 
 // Adaugă un pachet nou la magazin
-export async function addOfferToStore(storeId: string, currentOffers: StoreOffer[], newOffer: Omit<StoreOffer, 'id'>): Promise<StoreOffer | null> {
-  // Generăm un ID unic simplu
+export async function addOfferToStore(storeId: string, newOffer: Omit<StoreOffer, 'id'>): Promise<StoreOffer | null> {
   const offerWithId: StoreOffer = {
     ...newOffer,
     id: `offer_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
   };
-  
-  const updatedOffers = [...(currentOffers || []), offerWithId];
+
+  const { data: store, error: fetchError } = await supabase
+    .from("stores")
+    .select("offers")
+    .eq("id", storeId)
+    .single();
+
+  if (fetchError || !store) return null;
+
+  const updatedOffers = [...(store.offers || []), offerWithId];
 
   const { error } = await supabase
     .from("stores")
@@ -60,8 +68,16 @@ export async function addOfferToStore(storeId: string, currentOffers: StoreOffer
 }
 
 // Șterge un pachet din magazin
-export async function removeOfferFromStore(storeId: string, currentOffers: StoreOffer[], offerIdToRemove: string): Promise<boolean> {
-  const updatedOffers = currentOffers.filter(offer => offer.id !== offerIdToRemove);
+export async function removeOfferFromStore(storeId: string, offerIdToRemove: string): Promise<boolean> {
+  const { data: store, error: fetchError } = await supabase
+    .from("stores")
+    .select("offers")
+    .eq("id", storeId)
+    .single();
+
+  if (fetchError || !store) return false;
+
+  const updatedOffers = (store.offers || []).filter((offer: any) => offer.id !== offerIdToRemove);
 
   const { error } = await supabase
     .from("stores")
@@ -70,6 +86,73 @@ export async function removeOfferFromStore(storeId: string, currentOffers: Store
 
   if (error) {
     console.error("Eroare la ștergerea ofertei:", error);
+    return false;
+  }
+  return true;
+}
+
+// Actualizează un pachet existent din magazin
+export async function updateOfferInStore(storeId: string, updatedOffer: StoreOffer): Promise<boolean> {
+  const { data: store, error: fetchError } = await supabase
+    .from("stores")
+    .select("offers")
+    .eq("id", storeId)
+    .single();
+
+  if (fetchError || !store) return false;
+
+  const updatedOffers = (store.offers || []).map((offer: any) =>
+    offer.id === updatedOffer.id ? updatedOffer : offer
+  );
+
+  const { error } = await supabase
+    .from("stores")
+    .update({ offers: updatedOffers })
+    .eq("id", storeId);
+
+  if (error) {
+    console.error("Eroare la actualizarea ofertei:", error);
+    return false;
+  }
+  return true;
+}
+
+// Obține comenzile pentru un anumit magazin (Analytics & Active Orders)
+export async function getStoreOrders(storeId: string) {
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+      id,
+      total_amount,
+      status,
+      created_at,
+      pickup_time,
+      user_id,
+      order_items (
+        quantity,
+        price_at_purchase,
+        offer_id
+      )
+    `)
+    .eq("store_id", storeId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Eroare la obținerea comenzilor magazinului (detalii complete):", error.message, error.details, error.hint, JSON.stringify(error));
+    return [];
+  }
+  return data;
+}
+
+// Actualizează statusul unei comenzi (merchants)
+export async function updateOrderStatus(orderId: string, status: 'COMPLETED' | 'CANCELLED'): Promise<boolean> {
+  const { error } = await supabase
+    .from("orders")
+    .update({ status })
+    .eq("id", orderId);
+
+  if (error) {
+    console.error("Eroare la actualizarea comenzii:", error);
     return false;
   }
   return true;
