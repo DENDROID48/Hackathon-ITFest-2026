@@ -23,17 +23,16 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Obține datele unui magazin specific
-export async function getStoreData(storeId: string): Promise<StoreData | null> {
+// Obține datele unui magazin care aparține unui anumit utilizator
+export async function getStoreByOwner(userId: string): Promise<StoreData | null> {
   const { data, error } = await supabase
     .from("stores")
     .select("*")
-    .eq("id", storeId)
-    .single();
+    .eq("owner_id", userId)
+    .maybeSingle();
 
   if (error || !data) {
-    console.error("Eroare la preluarea magazinului:", error);
-    return null;
+    return null; // Returnează null dacă utilizatorul nu are magazin
   }
   return data as StoreData;
 }

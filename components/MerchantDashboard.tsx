@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { type StoreData, type StoreOffer, getStoreData, addOfferToStore, removeOfferFromStore, supabase } from "@/lib/merchantStore";
-
-const MOCK_STORE_ID = "1"; // For hackathon MVP, we assign Brutăria Artizanală to merchants
+import { type StoreData, type StoreOffer, getStoreByOwner, addOfferToStore, removeOfferFromStore, supabase } from "@/lib/merchantStore";
 
 export default function MerchantDashboard() {
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPartner, setIsPartner] = useState(true);
 
   // Form State
   const [isAdding, setIsAdding] = useState(false);
@@ -28,9 +27,13 @@ export default function MerchantDashboard() {
           return;
         }
 
-        const storeData = await getStoreData(MOCK_STORE_ID);
-        if (!storeData) throw new Error("Magazinul nu a fost găsit.");
-        setStore(storeData);
+        const storeData = await getStoreByOwner(session.user.id);
+        
+        if (!storeData) {
+          setIsPartner(false);
+        } else {
+          setStore(storeData);
+        }
       } catch (err: any) {
         setError(err.message || "A apărut o eroare la încărcarea datelor.");
       } finally {
@@ -104,6 +107,25 @@ export default function MerchantDashboard() {
       <div className="text-center py-12 bg-white dark:bg-neutral-900 rounded-[32px] border border-gray-100 dark:border-neutral-800">
         <h3 className="text-lg font-bold text-red-500 mb-2">Eroare Autentificare</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-6">{error}</p>
+      </div>
+    );
+  }
+
+  if (!isPartner) {
+    return (
+      <div className="text-center py-16 bg-white dark:bg-[#111111] rounded-[32px] border border-gray-100 dark:border-neutral-800 shadow-sm px-6">
+        <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+          🏪
+        </div>
+        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-3">
+          Devino Partener Quick-Eets
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8 leading-relaxed">
+          Ai un restaurant, o brutărie sau o cafenea? Alătură-te luptei împotriva risipei alimentare. Vinde excedentul la sfârșitul zilei și recuperează costurile, ajutând în același timp mediul.
+        </p>
+        <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 shadow-lg shadow-orange-500/20">
+          Aplică Acum
+        </button>
       </div>
     );
   }
