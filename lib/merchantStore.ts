@@ -127,6 +127,7 @@ export async function getStoreOrders(storeId: string) {
       status,
       created_at,
       pickup_time,
+      payment_method,
       user_id,
       order_items (
         quantity,

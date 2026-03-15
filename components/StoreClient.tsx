@@ -29,7 +29,9 @@ export default function StoreClient({ store }: { store: StoreData }) {
   const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [donatingId, setDonatingId] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const donateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 🔥 NOU: Starea pentru a ști dacă magazinul e deschis ACUM
   const [isOpen, setIsOpen] = useState(true);
@@ -123,10 +125,77 @@ export default function StoreClient({ store }: { store: StoreData }) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       handleReserve(offer);
     } else {
+      setDonatingId(null); // Reset charity if switching to reserve
       setConfirmingId(offer.id);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         setConfirmingId(null);
+      }, 4000);
+    }
+  };
+
+  const handleDonate = async (offer: StoreOffer) => {
+    setIsProcessing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        alert("Trebuie să fii autentificat pentru a dona!");
+        router.push("/login");
+        return;
+      }
+
+      const { data: orderDataArray, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: userId,
+          store_id: store.id,
+          total_amount: offer.price,
+          status: "RESERVED",
+          payment_method: "CHARITY",
+          pickup_time: offer.pickupTime,
+        })
+        .select();
+
+      if (orderError) {
+        console.error("Eroare Supabase la donare:", JSON.stringify(orderError));
+        throw orderError;
+      }
+
+      const orderData = orderDataArray?.[0];
+      if (!orderData) throw new Error("Comanda nu a putut fi returnathă.");
+
+      const { error: itemError } = await supabase
+        .from("order_items")
+        .insert({
+          order_id: orderData.id,
+          offer_id: offer.id,
+          quantity: 1,
+          price_at_purchase: offer.price
+        });
+
+      if (itemError) throw itemError;
+
+      router.push(`/orders/${orderData.id}`);
+    } catch (error) {
+      console.error("Eroare la donare (detalii):", JSON.stringify(error));
+      alert("A apărut o eroare. Încearcă din nou.");
+      setIsProcessing(false);
+      setDonatingId(null);
+    }
+  };
+
+  const onDonateClick = (offer: StoreOffer) => {
+    if (donatingId === offer.id) {
+      if (donateTimeoutRef.current) clearTimeout(donateTimeoutRef.current);
+      handleDonate(offer);
+    } else {
+      setConfirmingId(null); // Reset reserve if switching to charity
+      setDonatingId(offer.id);
+      if (donateTimeoutRef.current) clearTimeout(donateTimeoutRef.current);
+      donateTimeoutRef.current = setTimeout(() => {
+        setDonatingId(null);
       }, 4000);
     }
   };
@@ -260,28 +329,63 @@ export default function StoreClient({ store }: { store: StoreData }) {
                           </div>
                         </div>
 
-                        {/* Buton de plată care este DEZACTIVAT dacă magazinul e închis */}
+                        {/* Reserve Button */}
                         <button 
                           disabled={isProcessing || offer.quantityAvailable <= 0 || !isOpen}
                           onClick={() => onButtonClick(offer)}
                           style={{
-                            backgroundColor: (isProcessing || !isOpen) ? "#9ca3af" : (isConfirming ? "#f97316" : "#059669"),
-                            boxShadow: (isProcessing || !isOpen) ? "none" : (isConfirming ? "0 10px 15px -3px rgba(249, 115, 22, 0.3)" : "0 10px 15px -3px rgba(5, 150, 105, 0.3)")
+                            backgroundColor: (isProcessing || !isOpen) ? "#9ca3af" : (confirmingId === offer.id ? "#f97316" : "#059669"),
+                            boxShadow: (isProcessing || !isOpen) ? "none" : (confirmingId === offer.id ? "0 10px 15px -3px rgba(249, 115, 22, 0.3)" : "0 10px 15px -3px rgba(5, 150, 105, 0.3)")
                           }}
-                          className={`w-full rounded-xl py-4 font-bold text-white transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed ${isConfirming ? "animate-pulse" : ""}`}
+                          className={`w-full rounded-xl py-4 font-bold text-white transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed ${confirmingId === offer.id ? "animate-pulse" : ""}`}
                         >
                           {!isOpen 
                             ? "Magazin Închis" 
                             : isProcessing 
                               ? "Se procesează..." 
-                              : isConfirming 
-                                ? "Ești sigur? Apasă pentru a confirma!" 
+                              : confirmingId === offer.id
+                                ? "Еști sigur? Apasă pentru a confirma!" 
                                 : "Rezervă și Ridică la Locație"}
                         </button>
-                        
-                        <p className="mt-3 text-center text-xs text-gray-400">
-                          {isConfirming ? "Ai 4 secunde să confirmi comanda." : `Nu ai nevoie de card. Plătești direct la ${store.name}.`}
-                        </p>
+
+                        {/* Donate to Charity Button */}
+                        {isOpen && !isProcessing && (
+                          <>
+                            <div className="flex items-center gap-3 my-3">
+                              <div className="h-px flex-1 bg-gray-100 dark:bg-neutral-800" />
+                              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">sau</span>
+                              <div className="h-px flex-1 bg-gray-100 dark:bg-neutral-800" />
+                            </div>
+
+                            <button
+                              disabled={isProcessing || offer.quantityAvailable <= 0}
+                              onClick={() => onDonateClick(offer)}
+                              style={{
+                                backgroundColor: donatingId === offer.id ? "#7c3aed" : "transparent",
+                                borderColor: donatingId === offer.id ? "#7c3aed" : "#a855f7",
+                                color: donatingId === offer.id ? "white" : "#9333ea",
+                                boxShadow: donatingId === offer.id ? "0 10px 15px -3px rgba(124, 58, 237, 0.3)" : "none"
+                              }}
+                              className={`w-full rounded-xl py-3.5 font-bold border-2 transition-all duration-300 active:scale-[0.98] text-sm ${donatingId === offer.id ? "animate-pulse" : ""}`}
+                            >
+                              {donatingId === offer.id
+                                ? "❤️ Confirmă Donația! Mulțumim!"
+                                : "🍽️ Cumpără și Donează unui Adăpost"}
+                            </button>
+
+                            <p className="mt-2 text-center text-xs text-purple-500 dark:text-purple-400">
+                              {donatingId === offer.id
+                                ? "Ai 4 secunde să confirmi donația."
+                                : "Nu poți ridica? Oferă mâncarea unui adăpost local. 💜"}
+                            </p>
+                          </>
+                        )}
+
+                        {!donatingId && (
+                          <p className="mt-3 text-center text-xs text-gray-400">
+                            {confirmingId === offer.id ? "Ai 4 secunde să confirmi comanda." : `Nu ai nevoie de card. Plătești direct la ${store.name}.`}
+                          </p>
+                        )}
 
                       </div>
                     </div>

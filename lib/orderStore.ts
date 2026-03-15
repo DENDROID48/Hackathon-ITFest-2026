@@ -5,7 +5,7 @@ export type OrderItem = { offerId: string; qty: number };
 
 export type CreateOrderBody = {
   storeId: string;
-  paymentMethod: "IN_APP" | "AT_STORE";
+  paymentMethod: "IN_APP" | "AT_STORE" | "CHARITY";
   note?: string;
   items: OrderItem[];
   total: number;
@@ -16,7 +16,7 @@ export type Order = {
   createdAt: string;
   status: "RESERVED" | "CANCELLED" | "COMPLETED";
   storeId: string;
-  paymentMethod: "IN_APP" | "AT_STORE";
+  paymentMethod: "IN_APP" | "AT_STORE" | "CHARITY";
   note?: string;
   items: OrderItem[];
   total: number;

@@ -116,6 +116,8 @@ export default function OrderList() {
           minute: "2-digit",
         });
 
+        const isCharity = order.paymentMethod === "CHARITY";
+
         // Determine status styling
         let statusColor = "bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300";
         let statusLabel = "Necunoscut";
@@ -148,12 +150,17 @@ export default function OrderList() {
                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusColor}`}>
                       {statusLabel}
                     </span>
+                    {isCharity && (
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50">
+                        💜 Donație Adăpost
+                      </span>
+                    )}
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       {orderDate}
                     </span>
                   </div>
                   <h4 className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                    Spre Detalii Comandă ➔
+                    {isCharity ? "Donație pentru adăpost 💜" : "Spre Detalii Comandă ➔"}
                   </h4>
                   {order.pickup_time && order.pickup_time !== "Nespecificat" && (
                      <p className="text-sm font-bold text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1.5">
@@ -176,8 +183,8 @@ export default function OrderList() {
 
               </div>
 
-              {/* ACTION: Confirm Pickup (Only for RESERVED) */}
-              {order.status === "RESERVED" && (
+              {/* ACTION: Confirm Pickup (Only for RESERVED non-charity orders) */}
+              {order.status === "RESERVED" && order.paymentMethod !== "CHARITY" && (
                 <div 
                   className="mt-5 pt-5 border-t border-gray-100 dark:border-neutral-800/50"
                   onClick={(e) => e.preventDefault()} // Extra protection against Link click

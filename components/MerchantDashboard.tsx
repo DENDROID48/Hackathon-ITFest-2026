@@ -10,6 +10,8 @@ type StoreOrder = {
   status: string;
   created_at: string;
   pickup_time?: string;
+  payment_method?: string;
+  note?: string;
   user_id: string;
   order_items: { quantity: number; price_at_purchase: number; offer_id: string }[];
 };
@@ -433,10 +435,19 @@ export default function MerchantDashboard() {
                   <div key={order.id} className="p-4 rounded-2xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-[#111111] shadow-sm hover:border-emerald-200 transition-colors flex flex-col gap-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor} mb-1 inline-block`}>
-                          {statusLabel}
-                        </span>
-                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">Comanda #{order.id.split('-')[0]}</h4>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor} inline-block`}>
+                            {statusLabel}
+                          </span>
+                          {order.payment_method === "CHARITY" ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 inline-block">
+                              💜 Donație
+                            </span>
+                          ) : null}
+                        </div>
+                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">
+                          {order.payment_method === "CHARITY" ? "💜 Donație Adăpost" : `Comanda #${order.id.split('-')[0]}`}
+                        </h4>
                       </div>
                       <div className="text-right">
                         <span className="font-black text-emerald-600 dark:text-emerald-400">{order.total_amount} RON</span>
