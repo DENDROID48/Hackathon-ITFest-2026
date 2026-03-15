@@ -55,13 +55,13 @@ export default function MerchantDashboard() {
       quantityAvailable: parseInt(quantity, 10),
     };
 
-    const success = await addOfferToStore(store.id, store.offers, newOffer);
+    const addedOffer = await addOfferToStore(store.id, store.offers, newOffer);
     
-    if (success) {
-      // Optimistic update
+    if (addedOffer) {
+      // Optimistic update with the REAL ID
       setStore({
         ...store,
-        offers: [...(store.offers || []), { ...newOffer, id: `tmp_${Date.now()}` }]
+        offers: [...(store.offers || []), addedOffer]
       });
       setIsAdding(false);
       setTitle("");

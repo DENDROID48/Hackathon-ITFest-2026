@@ -38,7 +38,7 @@ export async function getStoreByOwner(userId: string): Promise<StoreData | null>
 }
 
 // Adaugă un pachet nou la magazin
-export async function addOfferToStore(storeId: string, currentOffers: StoreOffer[], newOffer: Omit<StoreOffer, 'id'>): Promise<boolean> {
+export async function addOfferToStore(storeId: string, currentOffers: StoreOffer[], newOffer: Omit<StoreOffer, 'id'>): Promise<StoreOffer | null> {
   // Generăm un ID unic simplu
   const offerWithId: StoreOffer = {
     ...newOffer,
@@ -54,9 +54,9 @@ export async function addOfferToStore(storeId: string, currentOffers: StoreOffer
 
   if (error) {
     console.error("Eroare la adăugarea ofertei:", error);
-    return false;
+    return null;
   }
-  return true;
+  return offerWithId;
 }
 
 // Șterge un pachet din magazin

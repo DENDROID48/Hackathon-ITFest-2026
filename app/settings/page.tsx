@@ -1,4 +1,5 @@
 import { ThemeSettings } from "@/components/ThemeSettings";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function SettingsPage() {
   return (
@@ -23,13 +24,14 @@ export default function SettingsPage() {
           </div>
 
           {/* Alte secțiuni (Ex. Date personale, Notificări) pot fi adăugate aici în viitor */}
-          <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-[32px] border border-gray-100 dark:border-neutral-800 shadow-sm transition-all duration-300 opacity-60">
+          <div className="bg-white dark:bg-neutral-900 p-6 sm:p-8 rounded-[32px] border border-gray-100 dark:border-neutral-800 shadow-sm transition-all duration-300 opacity-90">
              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <span className="text-2xl">🔒</span> Cont și Securitate
              </h3>
              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-4">
-               Această secțiune este în curs de dezvoltare pentru hackathon.
+               Deconectează-te în siguranță de pe acest dispozitiv.
              </p>
+             <LogoutButton />
           </div>
 
         </div>

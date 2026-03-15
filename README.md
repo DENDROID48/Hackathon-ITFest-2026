@@ -1,1 +1,3 @@
-An app meant to reduce the food wasting problem. Built for everyone. Great for bakeries, supermarkets, restaurants.
+Save food.
+Save your budget.
+Discover surprise packages with delicious food, at a fraction of the price, saved from restaurants and supermarkets in your area.
